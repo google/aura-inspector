@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aura-inspector"
+version = "0.1.0"
+description = "Swiss Army knife of Salesforce Experience Cloud misconfigurations testing."
+dependencies = [
+	"requests"
+]
+
+[project.scripts]
+aura-inspector = "aura_cli:main"

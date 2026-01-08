@@ -1,0 +1,26 @@
+if (requestResponse.request().url().contains("aura")){
+    var reqbody = requestResponse.request().bodyToString().trim();
+    
+    String regex = "ACTION\\$\\w+";
+    Pattern controllerPatter = Pattern.compile(regex);
+    
+    Matcher controllerMatcher = controllerPatter.matcher(utilities().urlUtils().decode(reqbody));
+    StringBuilder builder = new StringBuilder();
+    
+    if (!controllerMatcher.find()){
+        return false;
+     }
+    
+    while(controllerMatcher.find() && controllerMatcher.groupCount() > 0){
+        for (int i = 0; i <= controllerMatcher.groupCount(); i++){
+            if (controllerMatcher.group(i) != null){
+                builder.append(controllerMatcher.group(i) + " , ");
+            }
+        }
+        
+        requestResponse.annotations().setNotes(builder.toString());
+    }
+    return true;
+}
+
+return false;

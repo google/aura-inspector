@@ -1,0 +1,16 @@
+metadata:
+    language: v2-beta
+    name: "Hidden Salesforce app detected"
+    description: "Salesforce app might be used by some functionality of the application"
+    tags: "passive"
+    author: "Anirudha Kanodia"
+
+given response then
+    if ".my.site.com" in {latest.response} or ".vf.force.com" in {latest.response} or ".my.salesforce-sites.com" in {latest.response} or ".my.salesforce.com" in {latest.response} then
+        report issue:
+            severity: info
+            confidence: certain
+            detail: "Backend Salesforce app detected"
+            remediation: "Validate whether the app belongs to the org and check for potential misconfigurations"
+    end if
+
