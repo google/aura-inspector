@@ -236,7 +236,7 @@ def main():
 	add_logging_level('VERBOSE', 15)
 	init_logger(logging.DEBUG if args.debug else logging.VERBOSE if args.verbose else logging.INFO)
 
-	banner = '''
+	banner = r'''
     _                   ___                           _
    / \  _   _ _ __ __ _|_ _|_ __  ___ _ __   ___  ___| |_ ___  _ __
   / _ \| | | | '__/ _` || || '_ \/ __| '_ \ / _ \/ __| __/ _ \| '__|
