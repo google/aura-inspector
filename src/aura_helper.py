@@ -246,8 +246,17 @@ class AuraHelper:
 			fwuid_pattern = "Expected:(.*?) Actual"
 			fwuid = re.search(fwuid_pattern, resp_data)
 
-			if fwuid is None:
-				fwuid = json.loads(resp_data)['context']['fwuid']
+			if 'markup://aura:invalidSession' in resp_data:
+				logger.critical('Invalid session when trying to get context, guest access might be disabled, aborting')
+				exit()
+			elif fwuid is None:
+				json_resp_data = json.loads(resp_data)
+				if 'context' in json_resp_data:
+					fwuid = json_resp_data['context']['fwuid']
+				else:
+					logger.critical('No context found in response, aborting')
+					logger.debug(json_resp_data)
+					exit()
 			else:
 				fwuid = fwuid.group(1).strip()
 			app_data = 'siteforce:loginApp2'
