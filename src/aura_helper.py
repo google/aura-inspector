@@ -516,25 +516,37 @@ class AuraHelper:
 		banned_fields = ["CloneSourceId"] #Not handled properly by the tool (yet?)
 		banned_types = ["ADDRESS","ANYTYPE","COMPLEXVALUE"] #Not handled properly by the tool (yet?)
 		object_fields_map = {}
-		#Formatting as follow objectInfos(apiNames:User,Account) etc...
-		formatted_object_names = json.dumps(objects,separators=(',', ':'))
-		action = AuraActionHelper.build_action(
-			'1;fields',
-			'aura://RecordUiController/ACTION$executeGraphQL',
-			{
-				'queryInput':{
-					'operationName':'getFields',
-					'query':'query getFields{uiapi{objectInfos(apiNames:%s){ApiName,fields{ApiName,dataType}}}}' % (formatted_object_names),
-					'variables':{},
+
+		# GraphQL apiNames is limited to 100 entries
+		for i in range(0, len(objects), 100):
+			batch = objects[i:i+100]
+
+			#Formatting as follow objectInfos(apiNames:User,Account) etc...
+			formatted_object_names = json.dumps(batch,separators=(',', ':'))
+			action = AuraActionHelper.build_action(
+				'1;fields',
+				'aura://RecordUiController/ACTION$executeGraphQL',
+				{
+					'queryInput':{
+						'operationName':'getFields',
+						'query':'query getFields{uiapi{objectInfos(apiNames:%s){ApiName,fields{ApiName,dataType}}}}' % (formatted_object_names),
+						'variables':{},
+					}
 				}
-			}
-		)
-		action_response = self.send_aura_bulk(action).actions_responses[0]
-		if not action_response.is_success():
-			logger.error('Error while retrieving field names with GraphQL')
-			return None
-		objects_infos = filter(None, action_response.return_value['data']['uiapi']['objectInfos'])
-		object_fields_map = {x['ApiName']: [y['ApiName'] for y in x['fields'] if y['dataType'] not in banned_types and y['ApiName'] not in banned_fields] for x in objects_infos}
+			)
+			action_response = self.send_aura_bulk(action).actions_responses[0]
+			if not action_response.is_success():
+				logger.error('Error while retrieving field names with GraphQL')
+				return None
+
+			objects_infos = filter(None, action_response.return_value['data']['uiapi']['objectInfos'])
+			object_fields_map.update({
+				x['ApiName']: [
+					y['ApiName'] for y in x['fields']
+					if y['dataType'] not in banned_types and y['ApiName'] not in banned_fields
+				]
+				for x in objects_infos
+			})
 		return object_fields_map
 
 	def get_object_count_graphql(self, objects, make_chunks=True):
