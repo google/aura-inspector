@@ -538,9 +538,15 @@ class AuraHelper:
 			if not action_response.is_success():
 				logger.error('Error while retrieving field names with GraphQL')
 				return None
-			print(action_response.return_value)
+
 			objects_infos = filter(None, action_response.return_value['data']['uiapi']['objectInfos'])
-			object_fields_map = {x['ApiName']: [y['ApiName'] for y in x['fields'] if y['dataType'] not in banned_types and y['ApiName'] not in banned_fields] for x in objects_infos}
+			object_fields_map.update({
+				x['ApiName']: [
+					y['ApiName'] for y in x['fields']
+					if y['dataType'] not in banned_types and y['ApiName'] not in banned_fields
+				]
+				for x in objects_infos
+			})
 		return object_fields_map
 
 	def get_object_count_graphql(self, objects, make_chunks=True):
